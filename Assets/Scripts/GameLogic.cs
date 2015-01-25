@@ -1,11 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class GameLogic : MonoBehaviour {
 
 	public GameObject cardPrefab;
 
 	private GameObject c, n, e, s, w;
+	private int currentGameReveal = 0;
+	private GameObject[][] currentGameRevealOrder;
 
 	private static string[] cardDeck = {
 		"AH","2H","3H","4H","5H","6H","7H","8H","9H","TH","JH","QH","KH",
@@ -32,6 +35,7 @@ public class GameLogic : MonoBehaviour {
 		s = GameObject.Find("Hands/South");
 		w = GameObject.Find("Hands/West");
 
+		ResetGame();
 		NewGame();
 	}
 
@@ -40,19 +44,28 @@ public class GameLogic : MonoBehaviour {
 
 	}
 
+	void ResetGame() {
+		currentGameReveal = 0;
+		var hands = GameObject.FindGameObjectsWithTag("Hand");
+		foreach (GameObject hand in hands) {
+			hand.SendMessage("Reset");
+		}
+	}
+
 	void NewGame() {
 		GameObject[] dealOrder = {
-			e, s, w, n, c,
-			e, s, w, n,
-			e, s, w, n,
-			e, s, w, n, c
+			w, n, e, s, c,
+			w, n, e, s,
+			w, n, e, s,
+			w, n, e, s, c
 		};
 
-		GameObject[][] revealOrder = {
-			new GameObject[] {e, s, w, n, c},
-			new GameObject[] {e, s, w, n},
-			new GameObject[] {e, s, w, n},
-			new GameObject[] {e, s, w, n},
+		currentGameReveal = 0;
+		currentGameRevealOrder = new GameObject[][] {
+			new GameObject[] {s, s, s, s, w, n, e, c},
+			new GameObject[] {e, w, n},
+			new GameObject[] {e, w, n},
+			new GameObject[] {e, w, n},
 			new GameObject[] {c}
 		};
 
@@ -64,14 +77,16 @@ public class GameLogic : MonoBehaviour {
 			InstantiateCard(gameDeck[i], dealOrder[i]);
 		}
 
-		// Flip over
-		// TODO: Obviously don't flip them all over.
-		for (var i = 0; i < revealOrder.Length - 1; i++) {
-			var hands = revealOrder[i];
-			for (var j = 0; j < hands.Length; j++) {
-				var hand = hands[j];
-				hand.SendMessage("FlipNext");
-			}
+		RevealNext();
+	}
+
+	void EndGame() {
+		Debug.Log("GAME OVER");
+		var cards = GameObject.FindGameObjectsWithTag("Card");
+		foreach (var card in cards) {
+			var logic = card.GetComponent<CardLogic>();
+			logic.locked = false;
+			logic.busy = true;
 		}
 	}
 
@@ -92,5 +107,66 @@ public class GameLogic : MonoBehaviour {
 		card.name = cardName;
 		cardLogic.SetUp();
 		return card;
+	}
+
+	void RevealNext() {
+		var hands = currentGameRevealOrder[currentGameReveal];
+		for (var j = 0; j < hands.Length; j++) {
+			var hand = hands[j];
+			hand.SendMessage("FlipNext");
+		}
+
+		currentGameReveal++;
+	}
+
+	// Check to see if two cards are selected.
+	void CheckCards () {
+		Debug.Log ("Check Cards!");
+
+		var cards = GameObject.FindGameObjectsWithTag("Card");
+		var selectedCards = new List<GameObject>();
+		foreach (var card in cards) {
+			if (card.GetComponent<CardLogic>().selected) {
+				selectedCards.Add(card);
+			}
+		}
+		if (selectedCards.Count > 2) {
+			Debug.LogError("More than 2 cards selected. WTF?!");
+		}else if (selectedCards.Count == 2) {
+			SwapCards(selectedCards[0], selectedCards[1]);
+
+			if(currentGameReveal < currentGameRevealOrder.Length) {
+				RevealNext();
+			}else{
+				EndGame();
+			}
+		}
+	}
+
+	void SwapCards (GameObject a, GameObject b) {
+		Debug.Log("Swap Cards!");
+
+		var parA = a.transform.parent;
+		var posA = a.transform.localPosition;
+		var rotA = a.transform.localRotation;
+		var logA = a.GetComponent<CardLogic>();
+
+		var parB = b.transform.parent;
+		var posB = b.transform.localPosition;
+		var rotB = b.transform.localRotation;
+		var logB = b.GetComponent<CardLogic>();
+
+		//Rudimentary Swap
+		logA.selected = false;
+		a.transform.parent = parB;
+		a.transform.localPosition = posB;
+		a.transform.localRotation = rotB;
+		logA.locked = true;
+
+		logB.selected = false;
+		b.transform.parent = parA;
+		b.transform.localPosition = posA;
+		b.transform.localRotation = rotA;
+		logB.locked = true;
 	}
 }

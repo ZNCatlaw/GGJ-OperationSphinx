@@ -3,19 +3,26 @@ using System.Collections;
 
 public class CardLogic : MonoBehaviour {
 
-	public string cardName = "none";
+	public string cardName = "";
 	public bool faceUp = false;
 	public bool locked = false;
 	public bool selected = false;
-	
-	private bool busy = false;
+
+	[HideInInspector]
+	public bool busy = false;
 	private bool mouseIn = false;
 
 	private bool visLocked = false;
 	private bool visSelected = false;
 	private bool visFaceUp = false;
+	
 
-	private static Quaternion faceUpRotation = new Quaternion(0, 180, 0, 0);
+	private static Quaternion faceUpRotation = Quaternion.Euler(0, 180, 0);
+	private static Quaternion lockedRotation = Quaternion.Euler(0, 0, 10);
+
+	private static Vector3 selectedPosition = new Vector3(0.0f, 0.25f, 0.0f);
+
+	private static Color lockedColor = new Color(0.8f, 0.8f, 0.8f, 1.0f);
 	private static Color highlightColor = new Color(1.0f, 0.75f, 0.75f, 1.0f);
 	private static Color selectedColor = new Color(0.75f, 0.75f, 1.0f, 1.0f);
 
@@ -34,27 +41,40 @@ public class CardLogic : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 		// Transition into states
-		if (faceUp != visFaceUp){
+		if (faceUp != visFaceUp) {
 			visFaceUp = faceUp;
 			if (faceUp) {
 				transform.rotation = transform.rotation * faceUpRotation;
 			}else{
 				transform.rotation = transform.rotation * Quaternion.Inverse(faceUpRotation);
 			}
-
 		}
 
 		if (selected != visSelected){
 			visSelected = selected;
 			if (selected) {
-				transform.Translate(0.0f, 0.25f, 0.0f);
+				transform.localPosition = transform.localPosition + selectedPosition;
 			}else{
-				transform.Translate(0.0f, -0.25f, 0.0f);
+				transform.localPosition = transform.localPosition - selectedPosition;
+			}
+		}
+
+		if (locked != visLocked){
+			visLocked = locked;
+			if (locked) {
+				transform.rotation = transform.rotation * lockedRotation;
+			}else{
+				transform.rotation = transform.rotation * Quaternion.Inverse(lockedRotation);
 			}
 		}
 
 		// Color based on state
 		var shaderColor = Color.white;
+
+		if (locked) {
+			shaderColor = shaderColor * lockedColor;
+		}
+
 		if (selected) {
 			shaderColor = shaderColor * selectedColor;
 		}
@@ -80,6 +100,12 @@ public class CardLogic : MonoBehaviour {
 
 			//Swap selected state
 			selected = !selected;
+			Update();
+
+			//Possibly trigger a check.
+			if (selected) {
+				GameObject.Find("Main Camera").SendMessage("CheckCards");
+			}
 		}
 	}
 

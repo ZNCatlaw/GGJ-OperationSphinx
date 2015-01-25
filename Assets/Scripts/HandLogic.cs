@@ -21,11 +21,20 @@ public class HandLogic : MonoBehaviour {
 	
 	}
 
+	public void Reset () {		
+		foreach (Transform child in transform) {
+			Destroy(child);
+		}
+		cardsInHand = new List<GameObject>();
+	}
+
+	// For hand-spreading on instantiation
 	public Vector3 GetXOffset() {
 		float offset = (transform.childCount * cardXOffset) - (cardXOffset * maxHandSize / 2) - (cardXOffset / 2);
 		return new Vector3(offset, 0, 0);
 	}
 
+	// For Z-sorting on instantiation.
 	public Vector3 GetZOffset() {
 		float offset = transform.childCount * cardZOffset;
 		return new Vector3(0, 0, -offset);
