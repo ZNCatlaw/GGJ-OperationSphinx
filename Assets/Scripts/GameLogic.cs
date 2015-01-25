@@ -36,7 +36,6 @@ public class GameLogic : MonoBehaviour {
 		w = GameObject.Find("Hands/West");
 
 		ResetGame();
-		NewGame();
 	}
 
 	// Update is called once per frame
@@ -44,8 +43,9 @@ public class GameLogic : MonoBehaviour {
 
 	}
 
-	void ResetGame() {
+	void ResetState() {
 		currentGameReveal = 0;
+
 		var hands = GameObject.FindGameObjectsWithTag("Hand");
 		foreach (GameObject hand in hands) {
 			hand.SendMessage("Reset");
@@ -53,14 +53,8 @@ public class GameLogic : MonoBehaviour {
 	}
 
 	void NewGame() {
-		GameObject[] dealOrder = {
-			w, n, e, s, c,
-			w, n, e, s,
-			w, n, e, s,
-			w, n, e, s, c
-		};
+		Camera.main.audio.Play();
 
-		currentGameReveal = 0;
 		currentGameRevealOrder = new GameObject[][] {
 			new GameObject[] {s, s, s, s, w, n, e, c},
 			new GameObject[] {e, w, n},
@@ -73,6 +67,13 @@ public class GameLogic : MonoBehaviour {
 		Shuffle(gameDeck);
 
 		// Deal Cards
+		GameObject[] dealOrder = {
+			w, n, e, s, c,
+			w, n, e, s,
+			w, n, e, s,
+			w, n, e, s, c
+		};
+		
 		for (int i = 0; i < dealOrder.Length; i++) {
 			InstantiateCard(gameDeck[i], dealOrder[i]);
 		}
@@ -80,12 +81,17 @@ public class GameLogic : MonoBehaviour {
 		RevealNext();
 	}
 
+	void ResetGame() {
+		ResetState();
+		NewGame();
+	}
+
 	void EndGame() {
 		Debug.Log("GAME OVER");
 		var cards = GameObject.FindGameObjectsWithTag("Card");
 		foreach (var card in cards) {
 			var logic = card.GetComponent<CardLogic>();
-			logic.locked = false;
+			logic.locked = true;
 			logic.busy = true;
 		}
 	}
@@ -96,11 +102,11 @@ public class GameLogic : MonoBehaviour {
 
 		// Instantiate card object
 		var card = Instantiate(cardPrefab) as GameObject;
+		handLogic.cardsInHand.Add(card);
+
 		card.transform.parent = hand.transform;
 		card.transform.localPosition = handLogic.GetXOffset() + handLogic.GetZOffset();
 		card.transform.localRotation = Quaternion.identity;
-
-		handLogic.cardsInHand.Add(card);
 
 		// Setup card parameters
 		var cardLogic = card.GetComponent<CardLogic>();
@@ -110,6 +116,11 @@ public class GameLogic : MonoBehaviour {
 	}
 
 	void RevealNext() {
+		if(currentGameReveal >= currentGameRevealOrder.Length) {
+			EndGame();
+			return;
+		}
+
 		var hands = currentGameRevealOrder[currentGameReveal];
 		for (var j = 0; j < hands.Length; j++) {
 			var hand = hands[j];
@@ -134,12 +145,7 @@ public class GameLogic : MonoBehaviour {
 			Debug.LogError("More than 2 cards selected. WTF?!");
 		}else if (selectedCards.Count == 2) {
 			SwapCards(selectedCards[0], selectedCards[1]);
-
-			if(currentGameReveal < currentGameRevealOrder.Length) {
-				RevealNext();
-			}else{
-				EndGame();
-			}
+			RevealNext();
 		}
 	}
 

@@ -71,11 +71,11 @@ public class CardLogic : MonoBehaviour {
 		// Color based on state
 		var shaderColor = Color.white;
 
-		if (locked) {
+		if (!busy && locked) {
 			shaderColor = shaderColor * lockedColor;
 		}
 
-		if (selected) {
+		if (!busy && selected) {
 			shaderColor = shaderColor * selectedColor;
 		}
 
