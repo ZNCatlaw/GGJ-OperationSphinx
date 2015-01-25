@@ -18,7 +18,7 @@ RenderSettings:
   m_FogDensity: .00999999978
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientLight: {r: .200000003, g: .200000003, b: .200000003, a: 1}
+  m_AmbientLight: {r: 1, g: 1, b: 1, a: 1}
   m_SkyboxMaterial: {fileID: 0}
   m_HaloStrength: .5
   m_FlareStrength: 1
@@ -351,7 +351,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHandSize: 2
-  cardXOffset: .75
+  cardXOffset: 1
   cardZOffset: 1
   cardsInHand: []
 --- !u!1 &1625143387
@@ -395,7 +395,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHandSize: 4
-  cardXOffset: .75
+  cardXOffset: 1
   cardZOffset: 1
   cardsInHand: []
 --- !u!1 &1632473607
@@ -439,7 +439,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHandSize: 4
-  cardXOffset: .75
+  cardXOffset: 1
   cardZOffset: 1
   cardsInHand: []
 --- !u!1 &1784388743
@@ -573,7 +573,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHandSize: 4
-  cardXOffset: .75
+  cardXOffset: 1
   cardZOffset: 1
   cardsInHand: []
 --- !u!1 &1896595282
@@ -693,7 +693,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHandSize: 4
-  cardXOffset: .75
+  cardXOffset: 1
   cardZOffset: 1
   cardsInHand: []
 --- !u!1001 &2082255367
