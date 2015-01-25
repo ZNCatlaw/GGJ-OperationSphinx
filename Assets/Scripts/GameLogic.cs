@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using CommandLibrary;
 
 public class GameLogic : MonoBehaviour {
 
@@ -9,6 +10,8 @@ public class GameLogic : MonoBehaviour {
 	private GameObject c, n, e, s, w;
 	private int currentGameReveal = 0;
 	private GameObject[][] currentGameRevealOrder;
+
+	private CommandQueue _queue;
 
 	private static string[] cardDeck = {
 		"AH","2H","3H","4H","5H","6H","7H","8H","9H","TH","JH","QH","KH",
@@ -29,6 +32,8 @@ public class GameLogic : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		_queue = new CommandQueue();
+
 		c = GameObject.Find("Hands/Center");
 		n = GameObject.Find("Hands/North");
 		e = GameObject.Find("Hands/East");
@@ -40,7 +45,7 @@ public class GameLogic : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-
+		_queue.Update(Time.deltaTime);
 	}
 
 	void ResetState() {
@@ -49,6 +54,11 @@ public class GameLogic : MonoBehaviour {
 		var hands = GameObject.FindGameObjectsWithTag("Hand");
 		foreach (GameObject hand in hands) {
 			hand.SendMessage("Reset");
+		}
+
+		var uiEls = GameObject.FindGameObjectsWithTag("UI");
+		foreach (GameObject el in uiEls) {
+			el.SendMessage("Disable");
 		}
 	}
 
@@ -75,10 +85,20 @@ public class GameLogic : MonoBehaviour {
 		};
 		
 		for (int i = 0; i < dealOrder.Length; i++) {
-			InstantiateCard(gameDeck[i], dealOrder[i]);
+			var deck = gameDeck[i];
+			var next = dealOrder[i];
+			_queue.Enqueue(Commands.Do(() => { InstantiateCard(deck, next); }), Commands.WaitForSeconds(0.25f));
 		}
 
-		RevealNext();
+		_queue.Enqueue(Commands.Do(() => { RevealNext(); }), Commands.WaitForSeconds(0.25f));
+
+		// Enable the UI
+		_queue.Enqueue(Commands.Do(() => { 
+			var uiEls = GameObject.FindGameObjectsWithTag("UI");
+			foreach (GameObject el in uiEls) {
+				el.SendMessage("Enable");
+			}
+		}));
 	}
 
 	void ResetGame() {
@@ -96,7 +116,7 @@ public class GameLogic : MonoBehaviour {
 		}
 	}
 
-	GameObject InstantiateCard(string cardName, GameObject hand) {
+	void InstantiateCard(string cardName, GameObject hand) {
 		// Get information about hand
 		var handLogic = hand.GetComponent<HandLogic>();
 
@@ -112,7 +132,6 @@ public class GameLogic : MonoBehaviour {
 		var cardLogic = card.GetComponent<CardLogic>();
 		card.name = cardName;
 		cardLogic.SetUp();
-		return card;
 	}
 
 	void RevealNext() {
@@ -124,7 +143,7 @@ public class GameLogic : MonoBehaviour {
 		var hands = currentGameRevealOrder[currentGameReveal];
 		for (var j = 0; j < hands.Length; j++) {
 			var hand = hands[j];
-			hand.SendMessage("FlipNext");
+			_queue.Enqueue(Commands.Do(() => { hand.SendMessage("FlipNext"); }), Commands.WaitForSeconds(0.4f));
 		}
 
 		currentGameReveal++;
@@ -132,7 +151,7 @@ public class GameLogic : MonoBehaviour {
 
 	// Check to see if two cards are selected.
 	void CheckCards () {
-		Debug.Log ("Check Cards!");
+		//Debug.Log ("Check Cards!");
 
 		var cards = GameObject.FindGameObjectsWithTag("Card");
 		var selectedCards = new List<GameObject>();
@@ -150,7 +169,7 @@ public class GameLogic : MonoBehaviour {
 	}
 
 	void SwapCards (GameObject a, GameObject b) {
-		Debug.Log("Swap Cards!");
+		//Debug.Log("Swap Cards!");
 
 		var parA = a.transform.parent;
 		var posA = a.transform.localPosition;
@@ -162,17 +181,36 @@ public class GameLogic : MonoBehaviour {
 		var rotB = b.transform.localRotation;
 		var logB = b.GetComponent<CardLogic>();
 
-		//Rudimentary Swap
-		logA.selected = false;
-		a.transform.parent = parB;
-		a.transform.localPosition = posB;
-		a.transform.localRotation = rotB;
-		logA.locked = true;
-
-		logB.selected = false;
-		b.transform.parent = parA;
-		b.transform.localPosition = posA;
-		b.transform.localRotation = rotA;
-		logB.locked = true;
+		_queue.Enqueue(
+			Commands.WaitForSeconds(0.2f),
+			Commands.Do(() => {
+				b.transform.position = new Vector3(0, 0, 1000);
+				b.SendMessage("PlayPickup");
+			}),
+			Commands.WaitForSeconds(0.2f),
+			Commands.Do(() => {
+				a.transform.position = new Vector3(0, 0, 1000);
+				a.SendMessage("PlayPickup");
+			}),
+			Commands.WaitForSeconds(0.3f),
+			Commands.Do(() => {
+				//Rudimentary Swap
+				logA.selected = false;
+				a.transform.parent = parB;
+				a.transform.localPosition = posB;
+				a.transform.localRotation = rotB;
+				logA.locked = true;
+				a.SendMessage("PlayPlace");
+			}),
+			Commands.WaitForSeconds(0.3f),
+			Commands.Do(() => {
+				logB.selected = false;
+				b.transform.parent = parA;
+				b.transform.localPosition = posA;
+				b.transform.localRotation = rotA;
+				logB.locked = true;
+				b.SendMessage("PlayPlace");
+			})
+		);
 	}
 }

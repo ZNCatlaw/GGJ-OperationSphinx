@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using CommandLibrary;
 
 public class HandLogic : MonoBehaviour {
 
@@ -11,14 +12,15 @@ public class HandLogic : MonoBehaviour {
 	[HideInInspector]
 	public List<GameObject> cardsInHand;
 
+	private CommandQueue _queue = new CommandQueue();
+
 	// Use this for initialization
 	void Start () {
-
 	}
 	
 	// Update is called once per frame
 	void Update () {
-	
+		_queue.Update(Time.deltaTime);
 	}
 
 	public void Reset () {		

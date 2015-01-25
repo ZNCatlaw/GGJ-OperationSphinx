@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using CommandLibrary;
 
 public class CardLogic : MonoBehaviour {
 
@@ -15,7 +16,8 @@ public class CardLogic : MonoBehaviour {
 	private bool visLocked = false;
 	private bool visSelected = false;
 	private bool visFaceUp = false;
-	
+
+	private CommandQueue _queue;
 
 	private static Quaternion faceUpRotation = Quaternion.Euler(0, 180, 0);
 	private static Quaternion lockedRotation = Quaternion.Euler(0, 0, 10);
@@ -26,20 +28,28 @@ public class CardLogic : MonoBehaviour {
 	private static Color highlightColor = new Color(1.0f, 0.75f, 0.75f, 1.0f);
 	private static Color selectedColor = new Color(0.75f, 0.75f, 1.0f, 1.0f);
 
+	private static AudioClip[] drawSounds = Resources.LoadAll<AudioClip>("Sounds/Draw");
+	private static AudioClip[] flipSounds = Resources.LoadAll<AudioClip>("Sounds/Flip");
+	private static AudioClip[] placeSounds = Resources.LoadAll<AudioClip>("Sounds/Place");
+	private static AudioClip[] takeSounds = Resources.LoadAll<AudioClip>("Sounds/Take");
+
 	// Called by GameLogic.CardInstantiate
 	public void SetUp () {
 		var cardMaterial = Resources.Load("Materials/Cards/" + name, typeof(Material)) as Material;
 		var frontQuad = this.transform.FindChild("Front").gameObject;
 		frontQuad.renderer.material = cardMaterial;
+		PlayRandomSound(drawSounds);
 	}
 
 	// Use this for initialization
 	void Start () {
-	
+		_queue = new CommandQueue();
 	}
 
 	// Update is called once per frame
 	void Update () {
+		_queue.Update(Time.deltaTime);
+
 		// Transition into states
 		if (faceUp != visFaceUp) {
 			visFaceUp = faceUp;
@@ -48,6 +58,7 @@ public class CardLogic : MonoBehaviour {
 			}else{
 				transform.rotation = transform.rotation * Quaternion.Inverse(faceUpRotation);
 			}
+			PlayRandomSound(flipSounds);
 		}
 
 		if (selected != visSelected){
@@ -85,6 +96,20 @@ public class CardLogic : MonoBehaviour {
 
 		var frontQuad = this.transform.FindChild("Front").gameObject;
 		frontQuad.renderer.material.color = shaderColor;
+	}
+
+	void PlayRandomSound(AudioClip[] sounds){
+		var myAudio = gameObject.AddComponent<AudioSource>();
+		myAudio.clip = sounds[Random.Range(0, sounds.Length)];
+		myAudio.Play();
+	}
+
+	void PlayPickup() {
+		PlayRandomSound(takeSounds);
+	}
+
+	void PlayPlace() {
+		PlayRandomSound(placeSounds);
 	}
 	
 	void OnMouseDown() {
