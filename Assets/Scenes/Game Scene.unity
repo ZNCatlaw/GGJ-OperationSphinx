@@ -343,7 +343,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHandSize: 2
-  cardOffset: .200000003
+  cardOffset: .75
+  cardsInHand: []
 --- !u!1 &1625143387
 GameObject:
   m_ObjectHideFlags: 0
@@ -385,7 +386,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHandSize: 4
-  cardOffset: .200000003
+  cardOffset: .75
+  cardsInHand: []
 --- !u!1 &1632473607
 GameObject:
   m_ObjectHideFlags: 0
@@ -427,7 +429,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHandSize: 4
-  cardOffset: .200000003
+  cardOffset: .75
+  cardsInHand: []
 --- !u!1 &1784388743
 GameObject:
   m_ObjectHideFlags: 0
@@ -559,7 +562,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHandSize: 4
-  cardOffset: .200000003
+  cardOffset: .75
+  cardsInHand: []
 --- !u!1 &1896595282
 GameObject:
   m_ObjectHideFlags: 0
@@ -677,7 +681,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHandSize: 4
-  cardOffset: .200000003
+  cardOffset: .75
+  cardsInHand: []
 --- !u!1001 &2082255367
 Prefab:
   m_ObjectHideFlags: 0
