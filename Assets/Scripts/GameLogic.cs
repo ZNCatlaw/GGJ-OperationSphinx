@@ -64,8 +64,9 @@ public class GameLogic : MonoBehaviour {
 			InstantiateCard(gameDeck[i], dealOrder[i]);
 		}
 
-		// Flip over 
-		for (var i = 0; i < revealOrder.Length; i++) {
+		// Flip over
+		// TODO: Obviously don't flip them all over.
+		for (var i = 0; i < revealOrder.Length - 1; i++) {
 			var hands = revealOrder[i];
 			for (var j = 0; j < hands.Length; j++) {
 				var hand = hands[j];
