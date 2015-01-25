@@ -60,6 +60,7 @@ public class GameLogic : MonoBehaviour {
 		foreach (GameObject el in uiEls) {
 			el.SendMessage("Disable");
 		}
+		Camera.main.audio.Stop();
 	}
 
 	void NewGame() {
@@ -114,6 +115,10 @@ public class GameLogic : MonoBehaviour {
 			logic.locked = true;
 			logic.busy = true;
 		}
+
+		var endMusic = GetComponents<AudioSource>()[1];
+		Camera.main.audio.Stop();
+		endMusic.Play();
 	}
 
 	void InstantiateCard(string cardName, GameObject hand) {
@@ -136,7 +141,7 @@ public class GameLogic : MonoBehaviour {
 
 	void RevealNext() {
 		if(currentGameReveal >= currentGameRevealOrder.Length) {
-			EndGame();
+			_queue.Enqueue(Commands.Do(() => { EndGame(); }));
 			return;
 		}
 
