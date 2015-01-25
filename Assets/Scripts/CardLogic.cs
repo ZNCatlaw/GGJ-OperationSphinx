@@ -31,6 +31,6 @@ public class CardLogic : MonoBehaviour {
 	}
 
 	void OnMouseDown() {
-		Debug.Log(string.Format("Clicked: {0} in Hand: {1}", cardName, this.transform.parent.name));
+		Debug.Log(string.Format("Clicked `{0}` in hand `{1}`", name, this.transform.parent.name));
 	}
 }

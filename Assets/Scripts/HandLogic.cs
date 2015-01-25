@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class HandLogic : MonoBehaviour {
 
 	public int maxHandSize = 4;
-	public float cardXOffset = 0.75f;
+	public float cardXOffset = 1.0f;
 	public float cardZOffset = 1.0f;
 
 	[HideInInspector]

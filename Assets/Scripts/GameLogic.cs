@@ -48,6 +48,14 @@ public class GameLogic : MonoBehaviour {
 			e, s, w, n, c
 		};
 
+		GameObject[][] revealOrder = {
+			new GameObject[] {e, s, w, n, c},
+			new GameObject[] {e, s, w, n},
+			new GameObject[] {e, s, w, n},
+			new GameObject[] {e, s, w, n},
+			new GameObject[] {c}
+		};
+
 		var gameDeck = cardDeck.Clone() as string[];
 		Shuffle(gameDeck);
 
@@ -57,11 +65,13 @@ public class GameLogic : MonoBehaviour {
 		}
 
 		// Flip over 
-		e.SendMessage("FlipNext");
-		s.SendMessage("FlipNext");
-		w.SendMessage("FlipNext");
-		n.SendMessage("FlipNext");
-		c.SendMessage("FlipNext");
+		for (var i = 0; i < revealOrder.Length; i++) {
+			var hands = revealOrder[i];
+			for (var j = 0; j < hands.Length; j++) {
+				var hand = hands[j];
+				hand.SendMessage("FlipNext");
+			}
+		}
 	}
 
 	GameObject InstantiateCard(string cardName, GameObject hand) {
