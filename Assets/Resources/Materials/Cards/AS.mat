@@ -7,7 +7,7 @@ Material:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: AS
-  m_Shader: {fileID: 10750, guid: 0000000000000000f000000000000000, type: 0}
+  m_Shader: {fileID: 4800000, guid: d1360d9129dea27429b5f4adf2d2c881, type: 3}
   m_ShaderKeywords:
   - PIXELSNAP_ON
   m_CustomRenderQueue: -1
