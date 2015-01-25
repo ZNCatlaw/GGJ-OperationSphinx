@@ -166,7 +166,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 13326122145332649be9f54059d0df8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 1
+  cardName: none
+  faceUp: 0
+  locked: 0
 --- !u!1001 &100100000
 Prefab:
   m_ObjectHideFlags: 1

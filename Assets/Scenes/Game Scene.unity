@@ -239,7 +239,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 420824, guid: f6b5c0cae961e1842b648cf0be5bcc6e, type: 2}
       propertyPath: m_LocalPosition.y
-      value: 3
+      value: 3.25
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: f6b5c0cae961e1842b648cf0be5bcc6e, type: 2}
@@ -295,7 +295,15 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 420824, guid: f6b5c0cae961e1842b648cf0be5bcc6e, type: 2}
       propertyPath: m_LocalPosition.y
-      value: -3
+      value: -3.25
+      objectReference: {fileID: 0}
+    - target: {fileID: 420824, guid: f6b5c0cae961e1842b648cf0be5bcc6e, type: 2}
+      propertyPath: m_LocalRotation.z
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 420824, guid: f6b5c0cae961e1842b648cf0be5bcc6e, type: 2}
+      propertyPath: m_LocalRotation.w
+      value: -4.37113883e-08
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: f6b5c0cae961e1842b648cf0be5bcc6e, type: 2}
@@ -343,7 +351,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHandSize: 2
-  cardOffset: .75
+  cardXOffset: .75
+  cardZOffset: 1
   cardsInHand: []
 --- !u!1 &1625143387
 GameObject:
@@ -368,7 +377,7 @@ Transform:
   m_PrefabInternal: {fileID: 2082255367}
   m_GameObject: {fileID: 1625143387}
   m_LocalRotation: {x: 0, y: 0, z: .707106829, w: .707106829}
-  m_LocalPosition: {x: 6, y: 0, z: -1}
+  m_LocalPosition: {x: 5, y: 0, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1825744119}
@@ -386,7 +395,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHandSize: 4
-  cardOffset: .75
+  cardXOffset: .75
+  cardZOffset: 1
   cardsInHand: []
 --- !u!1 &1632473607
 GameObject:
@@ -410,8 +420,8 @@ Transform:
   m_PrefabParentObject: {fileID: 420824, guid: f6b5c0cae961e1842b648cf0be5bcc6e, type: 2}
   m_PrefabInternal: {fileID: 1345530020}
   m_GameObject: {fileID: 1632473607}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -3, z: -1}
+  m_LocalRotation: {x: 0, y: 0, z: 1, w: -4.37113883e-08}
+  m_LocalPosition: {x: 0, y: -3.25, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1825744119}
@@ -429,7 +439,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHandSize: 4
-  cardOffset: .75
+  cardXOffset: .75
+  cardZOffset: 1
   cardsInHand: []
 --- !u!1 &1784388743
 GameObject:
@@ -544,7 +555,7 @@ Transform:
   m_PrefabInternal: {fileID: 1993069776}
   m_GameObject: {fileID: 1870529300}
   m_LocalRotation: {x: 0, y: 0, z: -.707106829, w: .707106829}
-  m_LocalPosition: {x: -6, y: 0, z: -1}
+  m_LocalPosition: {x: -5, y: 0, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1825744119}
@@ -562,7 +573,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHandSize: 4
-  cardOffset: .75
+  cardXOffset: .75
+  cardZOffset: 1
   cardsInHand: []
 --- !u!1 &1896595282
 GameObject:
@@ -601,7 +613,7 @@ Prefab:
     m_Modifications:
     - target: {fileID: 420824, guid: f6b5c0cae961e1842b648cf0be5bcc6e, type: 2}
       propertyPath: m_LocalPosition.x
-      value: -6
+      value: -5
       objectReference: {fileID: 0}
     - target: {fileID: 420824, guid: f6b5c0cae961e1842b648cf0be5bcc6e, type: 2}
       propertyPath: m_LocalPosition.y
@@ -663,7 +675,7 @@ Transform:
   m_PrefabInternal: {fileID: 405988303}
   m_GameObject: {fileID: 2034807295}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 3, z: -1}
+  m_LocalPosition: {x: 0, y: 3.25, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1825744119}
@@ -681,7 +693,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHandSize: 4
-  cardOffset: .75
+  cardXOffset: .75
+  cardZOffset: 1
   cardsInHand: []
 --- !u!1001 &2082255367
 Prefab:
@@ -700,7 +713,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 420824, guid: f6b5c0cae961e1842b648cf0be5bcc6e, type: 2}
       propertyPath: m_LocalPosition.x
-      value: 6
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 420824, guid: f6b5c0cae961e1842b648cf0be5bcc6e, type: 2}
       propertyPath: m_LocalRotation.z
