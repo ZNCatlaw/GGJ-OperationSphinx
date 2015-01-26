@@ -132,7 +132,9 @@ public class CardLogic : MonoBehaviour {
 
 	void OnMouseEnter() {
 		//Debug.Log(string.Format("MouseEnter `{0}`, hand `{1}`", name, this.transform.parent.name));
-		mouseIn = true;
+        if (!Input.touchSupported) {
+            mouseIn = true;
+        }
 	}
 
 	void OnMouseExit() {

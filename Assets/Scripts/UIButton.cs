@@ -32,7 +32,9 @@ public class UIButton : MonoBehaviour {
 	}
 
 	void OnMouseEnter() {
-		mouseIn = true;
+        if (!Input.touchSupported) {
+            mouseIn = true;
+        }
 	}
 
 	void OnMouseExit() {
