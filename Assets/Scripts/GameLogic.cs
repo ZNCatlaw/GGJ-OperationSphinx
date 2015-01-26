@@ -8,10 +8,13 @@ public class GameLogic : MonoBehaviour {
 	public GameObject cardPrefab;
 
 	private GameObject c, n, e, s, w;
+    private GameObject[] hands, uiEls;
+
 	private int currentGameReveal = 0;
 	private GameObject[][] currentGameRevealOrder;
+    private List<GameObject> currentGameCards;
 
-	private CommandQueue _queue;
+	private CommandQueue _queue = new CommandQueue();
 
 	private static string[] cardDeck = {
 		"AH","2H","3H","4H","5H","6H","7H","8H","9H","TH","JH","QH","KH",
@@ -32,13 +35,14 @@ public class GameLogic : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		_queue = new CommandQueue();
-
 		c = GameObject.Find("Hands/Center");
 		n = GameObject.Find("Hands/North");
 		e = GameObject.Find("Hands/East");
 		s = GameObject.Find("Hands/South");
 		w = GameObject.Find("Hands/West");
+
+        hands = new GameObject[] { c, n, e, s, w };
+        uiEls = GameObject.FindGameObjectsWithTag("UI");
 
 		ResetGame();
 	}
@@ -49,17 +53,18 @@ public class GameLogic : MonoBehaviour {
 	}
 
 	void ResetState() {
+        _queue = new CommandQueue();
 		currentGameReveal = 0;
+        currentGameCards = new List<GameObject>();
 
-		var hands = GameObject.FindGameObjectsWithTag("Hand");
-		foreach (GameObject hand in hands) {
+     	foreach (var hand in hands) {
 			hand.SendMessage("Reset");
 		}
 
-		var uiEls = GameObject.FindGameObjectsWithTag("UI");
-		foreach (GameObject el in uiEls) {
+		foreach (var el in uiEls) {
 			el.SendMessage("Disable");
 		}
+
 		Camera.main.audio.Stop();
 	}
 
@@ -88,17 +93,15 @@ public class GameLogic : MonoBehaviour {
 		for (int i = 0; i < dealOrder.Length; i++) {
 			var deck = gameDeck[i];
 			var next = dealOrder[i];
-			_queue.Enqueue(Commands.Do(() => { InstantiateCard(deck, next); }), Commands.WaitForSeconds(0.25f));
+			_queue.Enqueue(Commands.Do(() => { currentGameCards.Add(InstantiateCard(deck, next)); }), Commands.WaitForSeconds(0.25f));
 		}
 
-		_queue.Enqueue(Commands.Do(() => { RevealNext(); }), Commands.WaitForSeconds(0.25f));
+        // Run the next reveal
+        RevealNext();
 
 		// Enable the UI
 		_queue.Enqueue(Commands.Do(() => { 
-			var uiEls = GameObject.FindGameObjectsWithTag("UI");
-			foreach (GameObject el in uiEls) {
-				el.SendMessage("Enable");
-			}
+			foreach (var el in uiEls) { el.SendMessage("Enable"); }
 		}));
 	}
 
@@ -108,9 +111,8 @@ public class GameLogic : MonoBehaviour {
 	}
 
 	void EndGame() {
-		Debug.Log("GAME OVER");
-		var cards = GameObject.FindGameObjectsWithTag("Card");
-		foreach (var card in cards) {
+		//Debug.Log("GAME OVER");
+		foreach (var card in currentGameCards) {
 			var logic = card.GetComponent<CardLogic>();
 			logic.locked = true;
 			logic.busy = true;
@@ -121,7 +123,7 @@ public class GameLogic : MonoBehaviour {
 		endMusic.Play();
 	}
 
-	void InstantiateCard(string cardName, GameObject hand) {
+	GameObject InstantiateCard(string cardName, GameObject hand) {
 		// Get information about hand
 		var handLogic = hand.GetComponent<HandLogic>();
 
@@ -137,6 +139,8 @@ public class GameLogic : MonoBehaviour {
 		var cardLogic = card.GetComponent<CardLogic>();
 		card.name = cardName;
 		cardLogic.SetUp();
+
+        return card;
 	}
 
 	void RevealNext() {
@@ -145,11 +149,21 @@ public class GameLogic : MonoBehaviour {
 			return;
 		}
 
+        _queue.Enqueue(Commands.Do(() => {
+            foreach (var el in uiEls) { el.SendMessage("Disable"); }
+            foreach (var card in currentGameCards) { card.GetComponent<CardLogic>().busy = true; }
+        }));
+
 		var hands = currentGameRevealOrder[currentGameReveal];
 		for (var j = 0; j < hands.Length; j++) {
 			var hand = hands[j];
 			_queue.Enqueue(Commands.Do(() => { hand.SendMessage("FlipNext"); }), Commands.WaitForSeconds(0.4f));
 		}
+
+        _queue.Enqueue(Commands.Do(() => {
+            foreach (var el in uiEls) { el.SendMessage("Enable"); }
+            foreach (var card in currentGameCards) { card.GetComponent<CardLogic>().busy = false; }
+        }));
 
 		currentGameReveal++;
 	}
@@ -158,9 +172,8 @@ public class GameLogic : MonoBehaviour {
 	void CheckCards () {
 		//Debug.Log ("Check Cards!");
 
-		var cards = GameObject.FindGameObjectsWithTag("Card");
 		var selectedCards = new List<GameObject>();
-		foreach (var card in cards) {
+		foreach (var card in currentGameCards) {
 			if (card.GetComponent<CardLogic>().selected) {
 				selectedCards.Add(card);
 			}
