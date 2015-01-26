@@ -17,8 +17,6 @@ public class CardLogic : MonoBehaviour {
 	private bool visSelected = false;
 	private bool visFaceUp = false;
 
-	private CommandQueue _queue;
-
 	private static Quaternion faceUpRotation = Quaternion.Euler(0, 180, 0);
 	private static Quaternion lockedRotation = Quaternion.Euler(0, 0, 10);
 
@@ -43,12 +41,10 @@ public class CardLogic : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		_queue = new CommandQueue();
 	}
 
 	// Update is called once per frame
 	void Update () {
-		_queue.Update(Time.deltaTime);
 
 		// Transition into states
 		if (faceUp != visFaceUp) {
@@ -82,11 +78,11 @@ public class CardLogic : MonoBehaviour {
 		// Color based on state
 		var shaderColor = Color.white;
 
-		if (!busy && locked) {
+		if (locked) {
 			shaderColor = shaderColor * lockedColor;
 		}
 
-		if (!busy && selected) {
+		if (selected) {
 			shaderColor = shaderColor * selectedColor;
 		}
 
