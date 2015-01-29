@@ -193,12 +193,18 @@ public class GameLogic : MonoBehaviour {
         var posA = a.transform.localPosition;
         var rotA = a.transform.localRotation;
         var logA = a.GetComponent<CardLogic>();
+        var prlA = parA.GetComponent<HandLogic>();
+        prlA.cardsInHand.Remove(a);
+        prlA.cardsInHand.Add(b);
 
         var parB = b.transform.parent;
         var posB = b.transform.localPosition;
         var rotB = b.transform.localRotation;
         var logB = b.GetComponent<CardLogic>();
-
+        var prlB = parB.GetComponent<HandLogic>();
+        prlB.cardsInHand.Remove(b);
+        prlB.cardsInHand.Add(a);
+        
         _queue.Enqueue(
             Commands.WaitForSeconds(0.2f),
             Commands.Do(() => {
