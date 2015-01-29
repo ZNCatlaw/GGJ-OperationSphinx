@@ -1,7 +1,9 @@
 using UnityEngine;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using CommandLibrary;
+using HoldemHand;
 
 public class GameLogic : MonoBehaviour {
 
@@ -119,9 +121,37 @@ public class GameLogic : MonoBehaviour {
             logic.busy = true;
         }
 
+        var handsMasks = new Dictionary<GameObject, ulong>();
+        var centerCards = c.GetComponent<HandLogic>().cardsInHand;
+
+        // Parse masks for each hand.
+        foreach (var hand in playerHands) {
+            var cardsInHand = hand.GetComponent<HandLogic>().cardsInHand;
+            var cards = centerCards.Concat(cardsInHand).Select<GameObject, string>(e => e.name.ToLower()).ToArray<string>();
+            var cardMask = Hand.ParseHand(string.Join(" ", cards));
+            handsMasks.Add(hand, cardMask);
+            Debug.Log(string.Format("Hand {0}: {1}", hand.name, Hand.DescriptionFromMask(cardMask)));
+        }
+
+        // If every hand is at least a pair, somebody won!
+        if (handsMasks.All(e => Hand.EvaluateType(e.Value) >= Hand.HandTypes.Pair)) {
+            var winner = handsMasks.OrderByDescending(e => Hand.Evaluate(e.Value)).First();
+            Debug.Log(string.Format("WINNER: {0} with {1}", winner.Key, Hand.DescriptionFromMask(winner.Value)));
+
+            // Was that somebody you (south)?
+            if (winner.Key == s) {
+                Debug.Log("WINNER IS YOU!");
+            } else { 
+                Debug.Log("YOU LOSE!");
+            }
+        } else {
+            Debug.Log("LOSE: Not everyone has a pair+.");
+        }
+
         var endMusic = GetComponents<AudioSource>()[1];
         Camera.main.audio.Stop();
         endMusic.Play();
+        GameObject.Find("SkipTurn").SendMessage("Disable");
     }
 
     GameObject InstantiateCard(string cardName, GameObject hand) {
