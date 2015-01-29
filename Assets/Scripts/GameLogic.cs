@@ -8,7 +8,7 @@ public class GameLogic : MonoBehaviour {
     public GameObject cardPrefab;
 
     private GameObject c, n, e, s, w;
-    private GameObject[] hands, uiEls;
+    private GameObject[] hands, playerHands, uiEls;
 
     private int currentGameReveal = 0;
     private GameObject[][] currentGameRevealOrder;
@@ -40,6 +40,7 @@ public class GameLogic : MonoBehaviour {
         e = GameObject.Find("Hands/East");
         s = GameObject.Find("Hands/South");
         w = GameObject.Find("Hands/West");
+        playerHands = new GameObject[] {n, e, s, w};
 
         hands = new GameObject[] { c, n, e, s, w };
         uiEls = GameObject.FindGameObjectsWithTag("UI");
