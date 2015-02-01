@@ -1,19 +1,20 @@
 using UnityEngine;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using CommandLibrary;
+using HoldemHand;
 
-public class GameLogic : MonoBehaviour {
+public class GameLogic : MonoBehaviour
+{
 
     public GameObject cardPrefab;
 
     private GameObject c, n, e, s, w;
-    private GameObject[] hands, uiEls;
-
+    private GameObject[] hands, playerHands, uiEls;
     private int currentGameReveal = 0;
     private GameObject[][] currentGameRevealOrder;
     private List<GameObject> currentGameCards;
-
     private CommandQueue _queue = new CommandQueue();
 
     private static string[] cardDeck = {
@@ -23,7 +24,8 @@ public class GameLogic : MonoBehaviour {
         "AS","2S","3S","4S","5S","6S","7S","8S","9S","TS","JS","QS","KS"
     };
 
-    static void Shuffle<T>(T[] array) {
+    static void Shuffle<T>(T[] array)
+    {
         int n = array.Length;
         for (int i = 0; i < n; i++) {
             int r = i + (int)(Random.value * (n - i));
@@ -34,12 +36,14 @@ public class GameLogic : MonoBehaviour {
     }
 
     // Use this for initialization
-    void Start() {
+    void Start()
+    {
         c = GameObject.Find("Hands/Center");
         n = GameObject.Find("Hands/North");
         e = GameObject.Find("Hands/East");
         s = GameObject.Find("Hands/South");
         w = GameObject.Find("Hands/West");
+        playerHands = new GameObject[] {n, e, s, w};
 
         hands = new GameObject[] { c, n, e, s, w };
         uiEls = GameObject.FindGameObjectsWithTag("UI");
@@ -48,11 +52,13 @@ public class GameLogic : MonoBehaviour {
     }
 
     // Update is called once per frame
-    void Update() {
+    void Update()
+    {
         _queue.Update(Time.deltaTime);
     }
 
-    void ResetState() {
+    void ResetState()
+    {
         _queue = new CommandQueue();
         currentGameReveal = 0;
         currentGameCards = new List<GameObject>();
@@ -68,7 +74,8 @@ public class GameLogic : MonoBehaviour {
         Camera.main.audio.Stop();
     }
 
-    void NewGame() {
+    void NewGame()
+    {
         Camera.main.audio.Play();
 
         currentGameRevealOrder = new GameObject[][] {
@@ -93,24 +100,35 @@ public class GameLogic : MonoBehaviour {
         for (int i = 0; i < dealOrder.Length; i++) {
             var deck = gameDeck[i];
             var next = dealOrder[i];
-            _queue.Enqueue(Commands.Do(() => { currentGameCards.Add(InstantiateCard(deck, next)); }), Commands.WaitForSeconds(0.25f));
+            _queue.Enqueue(
+                Commands.Do(delegate {
+                    currentGameCards.Add(InstantiateCard(deck, next));
+                }),
+                Commands.WaitForSeconds(0.25f)
+            );
         }
 
         // Run the next reveal
         RevealNext();
 
         // Enable the UI
-        _queue.Enqueue(Commands.Do(() => {
-            foreach (var el in uiEls) { el.SendMessage("Enable"); }
-        }));
+        _queue.Enqueue(
+            Commands.Do(delegate {
+                foreach (var el in uiEls) {
+                    el.SendMessage("Enable");
+                }
+            })
+        );
     }
 
-    void ResetGame() {
+    void ResetGame()
+    {
         ResetState();
         NewGame();
     }
 
-    void EndGame() {
+    void EndGame()
+    {
         //Debug.Log("GAME OVER");
         foreach (var card in currentGameCards) {
             var logic = card.GetComponent<CardLogic>();
@@ -118,12 +136,41 @@ public class GameLogic : MonoBehaviour {
             logic.busy = true;
         }
 
+        var handsMasks = new Dictionary<GameObject, ulong>();
+        var centerCards = c.GetComponent<HandLogic>().cardsInHand;
+
+        // Parse masks for each hand.
+        foreach (var hand in playerHands) {
+            var cardsInHand = hand.GetComponent<HandLogic>().cardsInHand;
+            var cards = centerCards.Concat(cardsInHand).Select(e => e.name).ToArray<string>();
+            var cardMask = Hand.ParseHand(string.Join(" ", cards).ToLower());
+            handsMasks.Add(hand, cardMask);
+            Debug.Log(string.Format("Hand {0}: {1}", hand.name, Hand.DescriptionFromMask(cardMask)));
+        }
+
+        // If every hand is at least a pair, somebody won!
+        if (handsMasks.All(e => Hand.EvaluateType(e.Value) >= Hand.HandTypes.Pair)) {
+            var winner = handsMasks.OrderByDescending(e => Hand.Evaluate(e.Value)).First();
+            Debug.Log(string.Format("WINNER: {0} with {1}", winner.Key, Hand.DescriptionFromMask(winner.Value)));
+
+            // Was that somebody you (south)?
+            if (winner.Key == s) {
+                Debug.Log("WINNER IS YOU!");
+            } else { 
+                Debug.Log("YOU LOSE!");
+            }
+        } else {
+            Debug.Log("LOSE: Not everyone has a pair+.");
+        }
+
         var endMusic = GetComponents<AudioSource>()[1];
         Camera.main.audio.Stop();
         endMusic.Play();
+        GameObject.Find("SkipTurn").SendMessage("Disable");
     }
 
-    GameObject InstantiateCard(string cardName, GameObject hand) {
+    GameObject InstantiateCard(string cardName, GameObject hand)
+    {
         // Get information about hand
         var handLogic = hand.GetComponent<HandLogic>();
 
@@ -143,33 +190,55 @@ public class GameLogic : MonoBehaviour {
         return card;
     }
 
-    void RevealNext() {
+    void RevealNext()
+    {
         if (currentGameReveal >= currentGameRevealOrder.Length) {
-            _queue.Enqueue(Commands.Do(() => { EndGame(); }));
+            _queue.Enqueue(
+                Commands.Do(delegate {
+                    EndGame();
+                })
+            );
             return;
         }
 
-        _queue.Enqueue(Commands.Do(() => {
-            foreach (var el in uiEls) { el.SendMessage("Disable"); }
-            foreach (var card in currentGameCards) { card.GetComponent<CardLogic>().busy = true; }
-        }));
+        _queue.Enqueue(
+            Commands.Do(delegate {
+                foreach (var el in uiEls) {
+                    el.SendMessage("Disable");
+                }
+                foreach (var card in currentGameCards) {
+                    card.GetComponent<CardLogic>().busy = true;
+                }
+            })
+        );
 
         var hands = currentGameRevealOrder[currentGameReveal];
         for (var j = 0; j < hands.Length; j++) {
             var hand = hands[j];
-            _queue.Enqueue(Commands.Do(() => { hand.SendMessage("FlipNext"); }), Commands.WaitForSeconds(0.4f));
+            _queue.Enqueue(
+                Commands.Do(delegate {
+                    hand.SendMessage("FlipNext");
+                }),
+                Commands.WaitForSeconds(0.4f));
         }
 
-        _queue.Enqueue(Commands.Do(() => {
-            foreach (var el in uiEls) { el.SendMessage("Enable"); }
-            foreach (var card in currentGameCards) { card.GetComponent<CardLogic>().busy = false; }
-        }));
+        _queue.Enqueue(
+            Commands.Do(delegate {
+                foreach (var el in uiEls) {
+                    el.SendMessage("Enable");
+                }
+                foreach (var card in currentGameCards) {
+                    card.GetComponent<CardLogic>().busy = false;
+                }
+            })
+        );
 
         currentGameReveal++;
     }
 
     // Check to see if two cards are selected.
-    void CheckCards() {
+    void CheckCards()
+    {
         //Debug.Log ("Check Cards!");
 
         var selectedCards = new List<GameObject>();
@@ -186,32 +255,39 @@ public class GameLogic : MonoBehaviour {
         }
     }
 
-    void SwapCards(GameObject a, GameObject b) {
+    void SwapCards(GameObject a, GameObject b)
+    {
         //Debug.Log("Swap Cards!");
 
         var parA = a.transform.parent;
         var posA = a.transform.localPosition;
         var rotA = a.transform.localRotation;
         var logA = a.GetComponent<CardLogic>();
+        var prlA = parA.GetComponent<HandLogic>();
+        prlA.cardsInHand.Remove(a);
+        prlA.cardsInHand.Add(b);
 
         var parB = b.transform.parent;
         var posB = b.transform.localPosition;
         var rotB = b.transform.localRotation;
         var logB = b.GetComponent<CardLogic>();
-
+        var prlB = parB.GetComponent<HandLogic>();
+        prlB.cardsInHand.Remove(b);
+        prlB.cardsInHand.Add(a);
+        
         _queue.Enqueue(
             Commands.WaitForSeconds(0.2f),
-            Commands.Do(() => {
+            Commands.Do(delegate {
                 b.transform.position = new Vector3(0, 0, 1000);
                 b.SendMessage("PlayPickup");
             }),
             Commands.WaitForSeconds(0.2f),
-            Commands.Do(() => {
+            Commands.Do(delegate {
                 a.transform.position = new Vector3(0, 0, 1000);
                 a.SendMessage("PlayPickup");
             }),
             Commands.WaitForSeconds(0.3f),
-            Commands.Do(() => {
+            Commands.Do(delegate {
                 //Rudimentary Swap
                 logA.selected = false;
                 a.transform.parent = parB;
@@ -221,7 +297,7 @@ public class GameLogic : MonoBehaviour {
                 a.SendMessage("PlayPlace");
             }),
             Commands.WaitForSeconds(0.3f),
-            Commands.Do(() => {
+            Commands.Do(delegate {
                 logB.selected = false;
                 b.transform.parent = parA;
                 b.transform.localPosition = posA;
