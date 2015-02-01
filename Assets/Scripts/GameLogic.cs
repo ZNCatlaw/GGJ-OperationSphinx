@@ -48,7 +48,7 @@ public class GameLogic : MonoBehaviour
         hands = new GameObject[] { c, n, e, s, w };
         uiEls = GameObject.FindGameObjectsWithTag("UI");
 
-        ResetGame();
+        ResetState();
     }
 
     // Update is called once per frame
@@ -132,7 +132,8 @@ public class GameLogic : MonoBehaviour
         //Debug.Log("GAME OVER");
         foreach (var card in currentGameCards) {
             var logic = card.GetComponent<CardLogic>();
-            logic.locked = true;
+            logic.selected = false;
+            logic.locked = false;
             logic.busy = true;
         }
 
@@ -145,28 +146,47 @@ public class GameLogic : MonoBehaviour
             var cards = centerCards.Concat(cardsInHand).Select(e => e.name).ToArray<string>();
             var cardMask = Hand.ParseHand(string.Join(" ", cards).ToLower());
             handsMasks.Add(hand, cardMask);
-            Debug.Log(string.Format("Hand {0}: {1}", hand.name, Hand.DescriptionFromMask(cardMask)));
+            //Debug.Log(string.Format("Hand {0}: {1}", hand.name, Hand.DescriptionFromMask(cardMask)));
         }
 
         // If every hand is at least a pair, somebody won!
         if (handsMasks.All(e => Hand.EvaluateType(e.Value) >= Hand.HandTypes.Pair)) {
             var winner = handsMasks.OrderByDescending(e => Hand.Evaluate(e.Value)).First();
-            Debug.Log(string.Format("WINNER: {0} with {1}", winner.Key, Hand.DescriptionFromMask(winner.Value)));
+            //Debug.Log(string.Format("WINNER: {0} with {1}", winner.Key, Hand.DescriptionFromMask(winner.Value)));
 
             // Was that somebody you (south)?
-            if (winner.Key == s) {
-                Debug.Log("WINNER IS YOU!");
-            } else { 
-                Debug.Log("YOU LOSE!");
-            }
+            EndGameAnnounce(winner.Key);
         } else {
-            Debug.Log("LOSE: Not everyone has a pair+.");
+            EndGameAnnounce(null);
+        }
+        GameObject.Find("SkipTurn").SendMessage("Disable");
+    }
+
+    void EndGameAnnounce(GameObject winner)
+    {
+        AudioSource endMusic;
+        if (winner == s) {
+            endMusic = GetComponents<AudioSource>()[1];
+            //Debug.Log("WINNER IS YOU!");
+        } else {
+            endMusic = GetComponents<AudioSource>()[2];
+            //Debug.Log("YOU LOSE!");
         }
 
-        var endMusic = GetComponents<AudioSource>()[1];
+        foreach (var hand in hands) {
+            var cards = hand.GetComponent<HandLogic>().cardsInHand;
+            foreach (var card in cards) {
+                var logic = card.GetComponent<CardLogic>();
+                if (hand == winner || (winner != null && hand == c)) {
+                    logic.won = true;
+                } else {
+                    logic.lost = true;
+                }
+            }
+        }
+
         Camera.main.audio.Stop();
         endMusic.Play();
-        GameObject.Find("SkipTurn").SendMessage("Disable");
     }
 
     GameObject InstantiateCard(string cardName, GameObject hand)
