@@ -11,6 +11,8 @@ public class CardLogic : MonoBehaviour
     public bool selected = false;
     [HideInInspector]
     public bool busy = false;
+    public bool won = false;
+    public bool lost = false;
 
     private bool mouseIn = false;
     private bool visLocked = false;
@@ -23,6 +25,9 @@ public class CardLogic : MonoBehaviour
     private static Color lockedColor = new Color(0.8f, 0.8f, 0.8f, 1.0f);
     private static Color highlightColor = new Color(1.0f, 0.75f, 0.75f, 1.0f);
     private static Color selectedColor = new Color(0.75f, 0.75f, 1.0f, 1.0f);
+    private static Color lostColor = new Color(1.0f, 0.85f, 0.85f, 1.0f);
+    private static Color wonColor = new Color(0.85f, 0.85f, 1.0f, 1.0f);
+
     private static AudioClip[] drawSounds = Resources.LoadAll<AudioClip>("Sounds/Draw");
     private static AudioClip[] flipSounds = Resources.LoadAll<AudioClip>("Sounds/Flip");
     private static AudioClip[] placeSounds = Resources.LoadAll<AudioClip>("Sounds/Place");
@@ -84,6 +89,12 @@ public class CardLogic : MonoBehaviour
 
         if (selected) {
             shaderColor = shaderColor * selectedColor;
+        }
+
+        if (won) {
+            shaderColor = shaderColor * wonColor;
+        } else if (lost) {
+            shaderColor = shaderColor * lostColor;
         }
 
         if (mouseIn && !locked && !busy && faceUp) {
