@@ -29,6 +29,7 @@ public class InstructionsLogic : MonoBehaviour
 
     void OnMouseDown()
     {
+        if (dismissed) { return; }
         dismissed = true;
         Destroy(GameObject.Find("Instructions/Background"));
         gameLogic.SendMessage("NewGame");
