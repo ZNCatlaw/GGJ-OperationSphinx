@@ -9,8 +9,8 @@ public class GameLogic : MonoBehaviour
 {
 
     public GameObject cardPrefab;
+    public GameObject c, n, e, s, w;
 
-    private GameObject c, n, e, s, w;
     private GameObject[] hands, playerHands, uiEls;
     private int currentGameReveal = 0;
     private GameObject[][] currentGameRevealOrder;
@@ -38,11 +38,6 @@ public class GameLogic : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        c = GameObject.Find("Hands/Center");
-        n = GameObject.Find("Hands/North");
-        e = GameObject.Find("Hands/East");
-        s = GameObject.Find("Hands/South");
-        w = GameObject.Find("Hands/West");
         playerHands = new GameObject[] {n, e, s, w};
 
         hands = new GameObject[] { c, n, e, s, w };
@@ -326,5 +321,10 @@ public class GameLogic : MonoBehaviour
                 b.SendMessage("PlayPlace");
             })
         );
+    }
+
+    public void ExitGame()
+    {
+        Application.Quit();
     }
 }
